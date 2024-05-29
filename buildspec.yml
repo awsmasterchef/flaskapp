@@ -5,8 +5,10 @@ phases:
       python: 3.11
     commands:
       - echo "Skipping dependency installation..."
+      - pip install -r requirements.txt ./python
   build:
     commands:
+      - zip -r python.zip python/
       - echo "Zipping deployment package..."
       - zip -r deployment_package.zip . -x '*.git*'
       - if [ -f deployment_package.zip ]; then echo "Zip file created successfully"; else echo "Error creating zip file"; exit 1; fi
@@ -14,4 +16,6 @@ phases:
     commands:
       - echo "Updating Lambda Function..."
       - if [ -f deployment_package.zip ]; then aws lambda update-function-code --function-name flaskapp --zip-file fileb://deployment_package.zip; else echo "Zip file not found"; exit 1; fi
+      - echo "Updating Lambda Layer..."
+      - if [ -f layer_package.zip ]; then aws lambda publish-layer-version --layer-name flask --zip-file fileb://python.zip; else echo "Layer zip file not found"; exit 1; fi
       - echo "DONE!!"
