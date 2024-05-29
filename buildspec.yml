@@ -6,6 +6,8 @@ phases:
     commands:
       - echo "Skipping dependency installation..."
       - pip install -r requirements.txt -t python
+      - if [ -d "python" ] && [ "$(ls -A python)" ]; then echo "Python directory is not empty"; else echo "Python directory is empty"; exit 1; fi
+
   build:
     commands:
       - zip -r python.zip python/
