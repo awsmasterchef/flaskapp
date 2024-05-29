@@ -17,8 +17,23 @@ phases:
       - if [ -f deployment_package.zip ]; then echo "Zip file created successfully"; else echo "Error creating zip file"; exit 1; fi
   post_build:
     commands:
-      - echo "Updating Lambda Function..."
-      - if [ -f deployment_package.zip ]; then aws lambda update-function-code --function-name flaskapp --zip-file fileb://deployment_package.zip; else echo "Zip file not found"; exit 1; fi
       - echo "Updating Lambda Layer..."
-      - if [ -f python.zip ]; then aws lambda publish-layer-version --layer-name flask --zip-file fileb://python.zip; else echo "Layer zip file not found"; exit 1; fi
+      - if [ -f python.zip ]; then 
+          LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name flask --zip-file fileb://python.zip --query 'LayerVersionArn' --output text); 
+          echo "Layer updated with ARN: $LAYER_VERSION_ARN"; 
+        else 
+          echo "Layer zip file not found"; exit 1; 
+        fi
+      - echo "Updating Lambda Function Code..."
+      - if [ -f deployment_package.zip ]; then 
+          aws lambda update-function-code --function-name flaskapp --zip-file fileb://deployment_package.zip; 
+        else 
+          echo "Deployment zip file not found"; exit 1; 
+        fi
+      - echo "Updating Lambda Function Configuration to use the new layer..."
+      - if [ ! -z "$LAYER_VERSION_ARN" ]; then 
+          aws lambda update-function-configuration --function-name flaskapp --layers $LAYER_VERSION_ARN; 
+        else 
+          echo "Layer ARN not found"; exit 1; 
+        fi
       - echo "DONE!!"
