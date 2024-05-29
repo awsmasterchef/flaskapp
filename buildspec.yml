@@ -9,6 +9,7 @@ phases:
   build:
     commands:
       - zip -r python.zip python/
+      - if [ -f python.zip ]; then echo "Layer Zip file created successfully"; else echo "Error creating Layer zip file"; exit 1; fi
       - echo "Zipping deployment package..."
       - zip -r deployment_package.zip . -x '*.git*'
       - if [ -f deployment_package.zip ]; then echo "Zip file created successfully"; else echo "Error creating zip file"; exit 1; fi
