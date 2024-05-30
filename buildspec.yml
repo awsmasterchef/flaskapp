@@ -14,7 +14,7 @@ phases:
     commands:
       - echo "Creating Layer Zip file..."
       - zip -r python.zip python/
-      - if [ -s python.zip ]; then echo "Layer Zip file created successfully"; else echo "Error creating Layer zip file: zip file is empty"; exit 1; fi
+      - if [ -s python.zip ]; then echo "Layer Zip file created successfully"; else echo "Error creating Layer zip file zip file is empty"; exit 1; fi
       - echo "Zipping deployment package..."
       - zip -r deployment_package.zip . -x '*.git*' 'python*' 'requirements.txt'
       - if [ -s deployment_package.zip ]; then echo "Deployment Zip file created successfully"; else echo "Error creating deployment zip file"; exit 1; fi
@@ -24,7 +24,7 @@ phases:
       - |
         if [ -f python.zip ]; then 
           LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name flask --zip-file fileb://python.zip --query 'LayerVersionArn' --output text)
-          echo "Layer updated with ARN: $LAYER_VERSION_ARN"
+          echo "Layer updated with ARN $LAYER_VERSION_ARN"
         else 
           echo "Layer zip file not found"; exit 1
         fi
