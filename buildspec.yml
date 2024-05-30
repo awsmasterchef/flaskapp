@@ -37,9 +37,18 @@ phases:
         fi
       - echo "Updating Lambda Function Configuration to use the new layer..."
       - |
-        if [ ! -z "$LAYER_VERSION_ARN" ]; then 
-          aws lambda update-function-configuration --function-name flaskapp --layers $LAYER_VERSION_ARN
-        else 
-          echo "Layer ARN not found"; exit 1
+        RETRIES=5
+        while [ $RETRIES -gt 0 ]; do
+          if [ ! -z "$LAYER_VERSION_ARN" ]; then 
+            aws lambda update-function-configuration --function-name flaskapp --layers $LAYER_VERSION_ARN && break
+          else 
+            echo "Layer ARN not found"; exit 1
+          fi
+          RETRIES=$((RETRIES-1))
+          echo "Retrying in 10 seconds..."
+          sleep 10
+        done
+        if [ $RETRIES -eq 0 ]; then
+          echo "Failed to update Lambda function configuration after multiple attempts"; exit 1
         fi
       - echo "DONE!!"
