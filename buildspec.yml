@@ -15,11 +15,31 @@ phases:
       - echo "Zipping deployment package..."
       - zip -r deployment_package.zip . -x '*.git*' 'python*' 'requirements.txt'
       - if [ -f deployment_package.zip ]; then echo "Zip file created successfully"; else echo "Error creating zip file"; exit 1; fi
+
   post_build:
     commands:
       - echo "Updating Lambda Function..."
-      - if [ -f deployment_package.zip ]; then aws lambda update-function-code --function-name flaskapp --zip-file fileb://deployment_package.zip; else echo "Zip file not found"; exit 1; fi
-      - echo "Layer updated with ARN: $LAYER_VERSION_ARN"
-      - echo "Updating Lambda Layer..."
-      - if [ -f python.zip ]; then LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name flask --zip-file fileb://python.zip --query 'LayerVersionArn' --output text); else echo "Layer zip file not found"; exit 1; fi
-      - echo "DONE!!
+      - if [ -f deployment_package.zip ]; then
+          aws lambda update-function-code --function-name flaskapp --zip-file fileb://deployment_package.zip
+        else
+          echo "Zip file not found"
+        fi
+
+      # Get the latest layer version using AWS CLI
+      - echo "Getting latest layer version..."
+      - LATEST_LAYER_VERSION=$(aws lambda list-layer-versions --layer-name flask --query 'Layers[?CompatibleRuntimes[?contains("python3.11")]].Version[0]' --output text)
+      - if [ $? -eq 0 ]; then
+          echo "Found latest layer version: $LATEST_LAYER_VERSION"
+        else
+          echo "Error getting latest layer version"
+          exit 1
+        fi
+
+      # Update Lambda function to use the latest layer version
+      - echo "Updating Lambda Function to use layer version: $LATEST_LAYER_VERSION"
+      - aws lambda update-function-configuration --function-name flaskapp --layers Arn=arn:aws:lambda:<region>:<account-id>:layer:flask:$LATEST_LAYER_VERSION
+      - echo "Lambda Function updated successfully!"
+
+      # Consider adding a post-update Lambda function test step with AWS CLI or Serverless Framework
+
+      - echo "DONE!!"
