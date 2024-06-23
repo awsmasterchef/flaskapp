@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def contact():
-    heading = "Connect Us"
+    heading = "Connect With Me"
     return render_template('contact.html', heading=heading)
 
 
