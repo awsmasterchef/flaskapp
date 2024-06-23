@@ -112,10 +112,10 @@
 </head>
 <body>
     <div class="container">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+        <img src="https://flaskapp-asset-bucket.s3.us-east-2.amazonaws.com/logo.png" alt="Logo" class="logo">
         <form class="contact-form" id="contact-form">
             <h2>{{ heading }}</h2>
-            <img src="{{ url_for('static', filename='bg_copy.jpg') }}" alt="Contact Us Image">
+            <img src="https://flaskapp-asset-bucket.s3.us-east-2.amazonaws.com/bg_copy.jpg" alt="Contact Us Image">
             <input type="text" name="name" placeholder="Name" required>
             <input type="email" name="email" placeholder="Email" required>
             <textarea name="message" placeholder="Message" rows="3" required></textarea>
@@ -137,7 +137,7 @@
 
             var formData = new FormData(this);
 
-            fetch('/send_message', {
+            fetch('/dev/send_message', {
                 method: 'POST',
                 body: formData
             })
